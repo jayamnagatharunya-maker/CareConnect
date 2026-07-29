@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet, Alert, ActivityIndicator, Picker } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
+
+import { Picker } from "@react-native-picker/picker";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../hooks/useAuth";
 
@@ -27,9 +36,15 @@ export default function RegisterScreen() {
     try {
       await login(email, password);
       router.replace("/(tabs)");
-    } catch (e) {
-      setError("Registration failed. Please try again.");
-    } finally {
+    } catch (e: any) {
+  console.log("LOGIN ERROR:", e.response?.data);
+  console.log("STATUS:", e.response?.status);
+
+  Alert.alert(
+    "Login Error",
+    JSON.stringify(e.response?.data ?? e.message)
+  );
+}finally {
       setLoading(false);
     }
   };

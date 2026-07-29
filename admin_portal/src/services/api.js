@@ -64,6 +64,8 @@ export const emergencyApi = {
 export const sosApi = {
   categories: () => api.get("/sos/categories/"),
   list: () => api.get("/sos/"),
+  updateStatus: (id, status) =>
+  api.post(`/sos/${id}/status/`, { status }),
   create: (data) => api.post("/sos/", data),
   broadcast: (data) => api.post("/sos/broadcast/", data),
 };

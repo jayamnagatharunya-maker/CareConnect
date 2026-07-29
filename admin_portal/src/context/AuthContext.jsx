@@ -24,7 +24,15 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    const res = await authApi.login({ email, password });
+    console.log("Sending:", {
+  email,
+  password,
+});
+
+const res = await authApi.login({
+  email: email.trim(),
+  password: password.trim(),
+});
     localStorage.setItem("access_token", res.data.access);
     localStorage.setItem("refresh_token", res.data.refresh);
     setUser({

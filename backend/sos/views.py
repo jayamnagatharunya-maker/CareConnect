@@ -101,7 +101,10 @@ class SosStatusUpdateView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk, *args, **kwargs):
-        sos = SOS.objects.get(pk=pk, resident=request.user)
+        print("===== STATUS UPDATE CALLED =====")
+        print(request.data)
+
+        sos = SOS.objects.get(pk=pk)
 
         new_status = request.data.get("status")
 
@@ -112,7 +115,7 @@ class SosStatusUpdateView(APIView):
             )
 
         sos.status = new_status
-        sos.save(update_fields=["status"])
+        sos.save()
 
         return Response(
             SOSSerializer(sos).data,

@@ -10,6 +10,7 @@ import { useAuth } from "../context/AuthContext";
 
 const navItems = [
   { path: "/", label: "Dashboard", icon: "📊" },
+  { path: "/sos-monitor", label: "SOS Monitor", icon: "🚨" },
   { path: "/societies", label: "Societies", icon: "🏘️" },
   { path: "/residents", label: "Residents", icon: "👥" },
   { path: "/emergency-contacts", label: "Emergency Contacts", icon: "🆘" },

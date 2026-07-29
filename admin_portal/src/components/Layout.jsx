@@ -3,13 +3,13 @@ import { useAuth } from "../context/AuthContext";
 
 const navItems = [
   { path: "/", label: "Dashboard", icon: "📊" },
+  { path: "/sos-monitor", label: "SOS Monitor", icon: "🚨" },
   { path: "/societies", label: "Societies", icon: "🏘️" },
   { path: "/residents", label: "Residents", icon: "👥" },
   { path: "/emergency-contacts", label: "Emergency Contacts", icon: "🆘" },
   { path: "/notifications", label: "Notifications", icon: "🔔" },
   { path: "/escalation", label: "Escalation", icon: "⏫" },
 ];
-
 export default function Layout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();

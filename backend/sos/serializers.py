@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from users.serializers import UserSerializer
 from .models import EmergencyCategory, IncidentUpdate, SOS
 
 
@@ -17,12 +18,31 @@ class IncidentUpdateSerializer(serializers.ModelSerializer):
 
 
 class SOSSerializer(serializers.ModelSerializer):
+    resident = UserSerializer(read_only=True)
+    category = EmergencyCategorySerializer(read_only=True)
     updates = IncidentUpdateSerializer(many=True, read_only=True)
 
     class Meta:
         model = SOS
-        fields = ("id", "resident", "category", "message", "latitude", "longitude", "address", "status", "updates", "created_at", "updated_at")
-        read_only_fields = ("id", "created_at", "updated_at", "resident")
+        fields = (
+            "id",
+            "resident",
+            "category",
+            "message",
+            "latitude",
+            "longitude",
+            "address",
+            "status",
+            "updates",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = (
+            "id",
+            "created_at",
+            "updated_at",
+            "resident",
+        )
 
 
 class SOSCreateSerializer(serializers.ModelSerializer):

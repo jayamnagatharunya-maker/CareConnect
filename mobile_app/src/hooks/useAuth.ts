@@ -22,12 +22,28 @@ export function useAuth() {
   }, []);
 
   const login = async (email, password) => {
-    const res = await authApi.login({ email, password });
-    globalThis.accessToken = res.data.access;
-    globalThis.refreshToken = res.data.refresh;
-    setUser({ id: res.data.user_id, email: res.data.email, role: res.data.role });
-    return res.data;
-  };
+  console.log("EMAIL:", email);
+  console.log("PASSWORD:", password);
+
+  console.log("EMAIL:", email);
+console.log("PASSWORD:", password);
+
+const res = await authApi.login({
+  email: email.trim(),
+  password: password.trim(),
+});
+
+  globalThis.accessToken = res.data.access;
+  globalThis.refreshToken = res.data.refresh;
+
+  setUser({
+    id: res.data.user_id,
+    email: res.data.email,
+    role: res.data.role,
+  });
+
+  return res.data;
+};
 
   const logout = async () => {
     await authApi.logout();

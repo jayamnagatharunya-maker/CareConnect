@@ -21,9 +21,14 @@ export default function LoginScreen() {
     try {
       await login(email, password);
       router.replace("/(tabs)");
-    } catch (e) {
-      setError("Invalid credentials. Please try again.");
-    } finally {
+    } catch (e: any) {
+  console.log("LOGIN ERROR:", e.response?.data);
+  console.log("STATUS:", e.response?.status);
+  Alert.alert(
+    "Login Error",
+    JSON.stringify(e.response?.data ?? e.message)
+  );
+} finally {
       setLoading(false);
     }
   };

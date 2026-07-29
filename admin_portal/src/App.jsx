@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 
 import Dashboard from "./pages/Dashboard";
+import SOSMonitor from "./pages/SOSMonitor";
 import Societies from "./pages/Societies";
 import Residents from "./pages/Residents";
 import EmergencyContacts from "./pages/EmergencyContacts";
@@ -72,6 +73,14 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+      <Route
+  path="/sos-monitor"
+  element={
+    <ProtectedRoute>
+      <SOSMonitor />
+    </ProtectedRoute>
+  }
+/>
     </Routes>
   );
 }
