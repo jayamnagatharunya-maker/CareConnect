@@ -1,6 +1,14 @@
 from rest_framework import serializers
 from users.serializers import UserSerializer
 from .models import EmergencyCategory, IncidentUpdate, SOS
+from escalation.models import EscalationLog
+
+
+class EscalationLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EscalationLog
+        fields = ("id", "sos", "from_role", "to_role", "reason", "triggered_at", "triggered_by")
+        read_only_fields = ("id", "triggered_at", "triggered_by")
 
 
 class EmergencyCategorySerializer(serializers.ModelSerializer):
@@ -21,6 +29,7 @@ class SOSSerializer(serializers.ModelSerializer):
     resident = UserSerializer(read_only=True)
     category = EmergencyCategorySerializer(read_only=True)
     updates = IncidentUpdateSerializer(many=True, read_only=True)
+    escalation_logs = EscalationLogSerializer(many=True, read_only=True)
 
     class Meta:
         model = SOS
@@ -34,6 +43,7 @@ class SOSSerializer(serializers.ModelSerializer):
             "address",
             "status",
             "updates",
+            "escalation_logs",
             "created_at",
             "updated_at",
         )

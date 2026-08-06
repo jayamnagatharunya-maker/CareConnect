@@ -1,55 +1,43 @@
-from django.contrib.auth import authenticate
-from django.contrib.auth.password_validation import validate_password
 from rest_framework import generics, permissions, serializers, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 
+from config.permissions import IsAdmin, IsResident
+
 from .models import ResidentProfile, User
-from .serializers import RegisterSerializer, ResidentProfileSerializer, UserSerializer
+from .serializers import (
+    RegisterSerializer,
+    ResidentProfileSerializer,
+    UserSerializer,
+    CustomTokenObtainPairSerializer,
+)
 
 
-class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    def validate(self, attrs):
-        data = super().validate(attrs)
-        data["role"] = self.user.role
-        data["email"] = self.user.email
-        data["user_id"] = self.user.id
-        return data
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
 
-class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
-    password2 = serializers.CharField(write_only=True, required=True)
-
-    class Meta:
-        model = User
-        fields = ("email", "password", "password2", "role", "phone_number")
-
-    def validate(self, attrs):
-        if attrs["password"] != attrs["password2"]:
-            raise serializers.ValidationError({"password": "Password fields didn't match."})
-        return attrs
-
-    def create(self, validated_data):
-        validated_data.pop("password2")
-        password = validated_data.pop("password")
-        user = User(**validated_data)
-        user.set_password(password)
-        user.save()
-        return user
 
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = [permissions.AllowAny]
     serializer_class = RegisterSerializer
+
+    def create(self, request, *args, **kwargs):
+        print("STEP 1: Request received")
+        print("DATA:", request.data)
+
+        response = super().create(request, *args, **kwargs)
+
+        print("STEP 2: Response created")
+        print("STATUS:", response.status_code)
+
+        return response
 
 
 class MeView(generics.RetrieveUpdateAPIView):
@@ -73,25 +61,71 @@ class LogoutView(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-class ResidentProfileView(generics.RetrieveUpdateAPIView):
-    serializer_class = ResidentProfileSerializer
+class DeviceTokenView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
+    class DeviceTokenSerializer(serializers.Serializer):
+        token = serializers.CharField()
+        platform = serializers.CharField(required=False, default="unknown")
+
+    def post(self, request):
+        serializer = self.DeviceTokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        token = serializer.validated_data["token"]
+        platform = serializer.validated_data.get("platform", "unknown")
+
+        from .models import DeviceToken
+
+        device_token, created = DeviceToken.objects.update_or_create(
+            token=token,
+            defaults={
+                "user": request.user,
+                "platform": platform,
+            },
+        )
+
+        return Response(
+            {
+                "token": device_token.token,
+                "platform": device_token.platform,
+                "created": created,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class ResidentProfileView(generics.RetrieveUpdateAPIView):
+    serializer_class = ResidentProfileSerializer
+    permission_classes = [permissions.IsAuthenticated, IsResident]
+
     def get_object(self):
-        profile, _ = ResidentProfile.objects.get_or_create(user=self.request.user)
+        print("USER:", self.request.user)
+        profile, created = ResidentProfile.objects.get_or_create(
+            user=self.request.user
+        )
+        print("PROFILE ID:", profile.id)
         return profile
+
+    def update(self, request, *args, **kwargs):
+        print("========== PROFILE UPDATE ==========")
+        print("USER:", request.user)
+        print("DATA:", request.data)
+        print("AUTH:", request.headers.get("Authorization"))
+        print("====================================")
+
+        return super().update(request, *args, **kwargs)
 
 
 class ResidentApprovalListView(generics.ListAPIView):
     serializer_class = ResidentProfileSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAdmin]
 
     def get_queryset(self):
         return ResidentProfile.objects.filter(approval_status="pending")
 
 
 class ResidentApprovalActionView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAdmin]
 
     def post(self, request, pk, *args, **kwargs):
         action = request.data.get("action")
@@ -113,7 +147,7 @@ class ResidentApprovalActionView(APIView):
 
 class ResidentDirectoryView(generics.ListAPIView):
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAdmin]
 
     def get_queryset(self):
         queryset = User.objects.filter(role="resident")

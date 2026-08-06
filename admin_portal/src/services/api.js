@@ -1,4 +1,4 @@
-import axios from "axios";
+﻿import axios from "axios";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
@@ -41,7 +41,13 @@ export const societyApi = {
   update: (id, data) => api.put(`/society/societies/${id}/`, data),
   delete: (id) => api.delete(`/society/societies/${id}/`),
   blocks: (params) => api.get("/society/blocks/", { params }),
+  createBlock: (data) => api.post("/society/blocks/", data),
+  updateBlock: (id, data) => api.put(`/society/blocks/${id}/`, data),
+  deleteBlock: (id) => api.delete(`/society/blocks/${id}/`),
   flats: (params) => api.get("/society/flats/", { params }),
+  createFlat: (data) => api.post("/society/flats/", data),
+  updateFlat: (id, data) => api.put(`/society/flats/${id}/`, data),
+  deleteFlat: (id) => api.delete(`/society/flats/${id}/`),
 };
 
 export const usersApi = {
@@ -53,21 +59,30 @@ export const usersApi = {
 export const emergencyApi = {
   guardians: () => api.get("/emergency/guardians/"),
   createGuardian: (data) => api.post("/emergency/guardians/", data),
+
   contacts: () => api.get("/emergency/contacts/"),
   createContact: (data) => api.post("/emergency/contacts/", data),
   updateContact: (id, data) =>
-  api.put(`/emergency/contacts/${id}/`, data),
+    api.put(`/emergency/contacts/${id}/`, data),
   deleteContact: (id) =>
-  api.delete(`/emergency/contacts/${id}/`),
+    api.delete(`/emergency/contacts/${id}/`),
+
+  verifyContact: (id) =>
+    api.post(`/emergency/contacts/${id}/verify/`),
 };
 
 export const sosApi = {
   categories: () => api.get("/sos/categories/"),
   list: () => api.get("/sos/"),
+  detail: (id) => api.get(`/sos/${id}/`),
   updateStatus: (id, status) =>
-  api.post(`/sos/${id}/status/`, { status }),
+    api.post(`/sos/${id}/status/`, { status }),
   create: (data) => api.post("/sos/", data),
   broadcast: (data) => api.post("/sos/broadcast/", data),
+};
+
+export const dashboardApi = {
+  summary: () => api.get("/dashboard/summary/"),
 };
 
 export const notificationsApi = {

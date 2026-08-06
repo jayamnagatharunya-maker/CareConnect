@@ -51,6 +51,21 @@ class User(AbstractUser):
         return f"{self.email} ({self.role})"
 
 
+class DeviceToken(models.Model):
+    user = models.ForeignKey(
+        User,
+        related_name="device_tokens",
+        on_delete=models.CASCADE,
+    )
+    token = models.TextField(unique=True)
+    platform = models.CharField(max_length=20, blank=True, default="unknown")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.email} - {self.platform}"
+
+
 class ResidentProfile(models.Model):
     APPROVAL_STATUS_CHOICES = (
         ("pending", "Pending"),
@@ -70,3 +85,42 @@ class ResidentProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.flat} ({self.approval_status})"
+
+
+class SecurityProfile(models.Model):
+    user = models.OneToOneField(User, related_name="security_profile", on_delete=models.CASCADE)
+    badge_number = models.CharField(max_length=50, blank=True)
+    shift_start = models.TimeField(null=True, blank=True)
+    shift_end = models.TimeField(null=True, blank=True)
+    duty_days = models.CharField(max_length=100, blank=True)
+    is_onduty = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.email} - Security"
+
+
+class VolunteerProfile(models.Model):
+    user = models.OneToOneField(User, related_name="volunteer_profile", on_delete=models.CASCADE)
+    skills = models.TextField(blank=True)
+    availability_hours = models.CharField(max_length=100, blank=True)
+    is_available = models.BooleanField(default=True)
+    assigned_zone = models.CharField(max_length=100, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.email} - Volunteer"
+
+
+class OTP(models.Model):
+    user = models.ForeignKey(User, related_name="otps", on_delete=models.CASCADE)
+    code = models.CharField(max_length=6)
+    purpose = models.CharField(max_length=50)
+    expires_at = models.DateTimeField()
+    is_used = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.email} - {self.purpose}"

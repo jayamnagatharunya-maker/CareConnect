@@ -7,7 +7,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  useEffect(() => {k
     const token = localStorage.getItem("access_token");
     if (token) {
       authApi
@@ -24,15 +24,14 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    console.log("Sending:", {
-  email,
-  password,
-});
+    console.log("Sending:", { email, password });
 
-const res = await authApi.login({
-  email: email.trim(),
-  password: password.trim(),
-});
+    const res = await authApi.login({
+      email: email.trim(),
+      password: password.trim(),
+    });
+
+    console.log("LOGIN RESPONSE:", res.data);
     localStorage.setItem("access_token", res.data.access);
     localStorage.setItem("refresh_token", res.data.refresh);
     setUser({

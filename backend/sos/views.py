@@ -2,6 +2,8 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from config.permissions import IsAdmin, IsResident, IsSecurity, IsVolunteer
+
 from .utils import get_address
 from .models import EmergencyCategory, IncidentUpdate, SOS
 from .serializers import (
@@ -21,11 +23,18 @@ class EmergencyCategoryListView(generics.ListAPIView):
 
 class SOSListCreateView(generics.ListCreateAPIView):
     serializer_class = SOSSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsResident]
 
     def get_queryset(self):
-        queryset = SOS.objects.filter(resident=self.request.user)
+        user = self.request.user
         sos_status = self.request.query_params.get("status")
+
+        if user.role == "resident":
+            queryset = SOS.objects.filter(resident=user)
+        elif user.role == "admin":
+            queryset = SOS.objects.all()
+        else:
+            queryset = SOS.objects.filter(status="pending")
 
         if sos_status:
             queryset = queryset.filter(status=sos_status)
@@ -46,26 +55,27 @@ class SOSListCreateView(generics.ListCreateAPIView):
             address=address,
         )
 
+        from escalation.models import ResponseTimeConfig
+        from escalation.tasks import auto_escalate_sos
+        from notifications.services import NotificationService
+
         try:
-            from notifications.services import NotificationService
-            from escalation.tasks import auto_escalate_sos
+            NotificationService.notify_primary_guardians_about_sos(sos)
+        except Exception as exc:
+            print("SOS notification dispatch failed:", exc)
 
-            print("========== Before notification service ==========")
+        response_config = (
+            ResponseTimeConfig.objects.filter(role="guardian", is_active=True, auto_escalate=True)
+            .order_by("response_window_minutes")
+            .first()
+        )
 
-            NotificationService.notify_guardians_about_sos(sos)
-
-            print("========== After notification service ==========")
-
-            auto_escalate_sos.apply_async(
-                args=[sos.id],
-                countdown=300,
-            )
-
-            print("========== Escalation task scheduled ==========")
-
-        except Exception as e:
-            print("========== ERROR ==========")
-            print(e)
+        if response_config:
+            countdown_seconds = response_config.response_window_minutes * 60
+            try:
+                auto_escalate_sos.apply_async((sos.id,), countdown=countdown_seconds)
+            except Exception as exc:
+                print("Failed to schedule auto-escalation task:", exc)
 
         return sos
 
@@ -86,7 +96,7 @@ class SOSListCreateView(generics.ListCreateAPIView):
 class SOSDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = SOS.objects.all()
     serializer_class = SOSSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAdmin]
 
 
 class IncidentUpdateCreateView(generics.CreateAPIView):
@@ -123,8 +133,51 @@ class SosStatusUpdateView(APIView):
         )
 
 
-class CommunityBroadcastView(APIView):
+class SOSGuardianResponseView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk, *args, **kwargs):
+        if request.user.role != "guardian":
+            return Response(
+                {"detail": "Only guardian users can acknowledge SOS alerts."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            sos = SOS.objects.get(pk=pk)
+        except SOS.DoesNotExist:
+            return Response(
+                {"detail": "SOS not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if sos.status in {"resolved", "cancelled", "acknowledged"}:
+            return Response(
+                {"detail": "SOS cannot be acknowledged in its current state."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        sos.status = "acknowledged"
+        sos.save()
+
+        from escalation.models import EscalationLog
+
+        EscalationLog.objects.create(
+            sos=sos,
+            from_role="guardian",
+            to_role="guardian",
+            reason="Guardian acknowledged the SOS alert.",
+            triggered_by=request.user,
+        )
+
+        return Response(
+            SOSSerializer(sos).data,
+            status=status.HTTP_200_OK,
+        )
+
+
+class CommunityBroadcastView(APIView):
+    permission_classes = [permissions.IsAuthenticated, IsAdmin]
 
     def post(self, request, *args, **kwargs):
         sos_id = request.data.get("sos_id")
@@ -181,7 +234,7 @@ class CommunityBroadcastView(APIView):
 
 
 class VolunteerAvailabilityView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsVolunteer]
 
     def get(self, request, *args, **kwargs):
         user = request.user

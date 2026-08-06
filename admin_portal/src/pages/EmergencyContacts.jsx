@@ -7,6 +7,7 @@ export default function EmergencyContacts() {
   const [form, setForm] = useState({ name: "", phone_number: "", email: "", relation: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
@@ -215,54 +216,7 @@ const handleDelete = async (id) => {
                           <td className="py-3 px-4 text-sm text-slate-900 font-medium">{contact.name}</td>
                           <td className="py-3 px-4 text-sm text-slate-600">{contact.phone_number}</td>
                           <td className="py-3 px-4 text-sm text-slate-600">{contact.relation || "-"}</td>
-                          <tr
-  key={contact.id}
-  className="border-b border-slate-100 hover:bg-slate-50"
->
-  <td className="py-3 px-4 text-sm text-slate-900 font-medium">
-    {contact.name}
-  </td>
-
-  <td className="py-3 px-4 text-sm text-slate-600">
-    {contact.phone_number}
-  </td>
-
-  <td className="py-3 px-4 text-sm text-slate-600">
-    {contact.relation || "-"}
-  </td>
-
-  <td className="py-3 px-4">
-    <span
-      className={`px-2 py-1 rounded-full text-xs font-medium ${
-        contact.verification_status === "verified"
-          ? "bg-green-100 text-green-700"
-          : contact.verification_status === "rejected"
-          ? "bg-red-100 text-red-700"
-          : "bg-yellow-100 text-yellow-700"
-      }`}
-    >
-      {contact.verification_status}
-    </span>
-  </td>
-
-  <td className="py-3 px-4">
-    <div className="flex gap-2">
-      <button
-        className="btn btn-secondary text-sm"
-        onClick={() => handleEdit(contact)}
-      >
-        Edit
-      </button>
-
-      <button
-        className="btn btn-danger text-sm"
-        onClick={() => handleDelete(contact.id)}
-      >
-        Delete
-      </button>
-    </div>
-  </td>
-</tr>
+                          
                         </tr>
                       ))}
                     </tbody>

@@ -3,7 +3,6 @@ from celery import shared_task
 from escalation.models import EscalationLog
 from notifications.services import NotificationService
 from sos.models import SOS
-from users.models import User
 
 
 @shared_task
@@ -13,34 +12,25 @@ def auto_escalate_sos(sos_id):
     except SOS.DoesNotExist:
         return
 
-    # Don't escalate if already resolved
-    if sos.status.lower() == "resolved":
+    if sos.status.lower() in {"resolved", "cancelled", "acknowledged"}:
         return
 
-    # Find security and volunteer users
-    security_users = User.objects.filter(role="security", is_verified=True)
-    volunteer_users = User.objects.filter(role="volunteer", is_verified=True)
+    primary_guards = sos.resident.guardians.filter(is_primary=True, is_verified=True)
+    if primary_guards.exists():
+        from_role = "guardian"
+        to_role = "secondary_guardian"
+        NotificationService.notify_secondary_guardians_about_sos(sos)
+        NotificationService.notify_emergency_contacts_about_sos(sos)
+    else:
+        from_role = "guardian"
+        to_role = "emergency_contact"
+        NotificationService.notify_emergency_contacts_about_sos(sos)
 
-    # Create escalation log
+    NotificationService.notify_security_and_volunteers_about_sos(sos)
+
     EscalationLog.objects.create(
         sos=sos,
-        from_role="guardian",
-        to_role="security",
+        from_role=from_role,
+        to_role=to_role,
         reason="No response from guardian within response window",
     )
-
-    # Notify security
-    for user in security_users:
-        NotificationService.send_push_notification(
-            user,
-            "SOS Escalated",
-            f"SOS from {sos.resident.email} requires attention."
-        )
-
-    # Notify volunteers
-    for user in volunteer_users:
-        NotificationService.send_push_notification(
-            user,
-            "SOS Escalated",
-            f"SOS from {sos.resident.email} requires attention."
-        )

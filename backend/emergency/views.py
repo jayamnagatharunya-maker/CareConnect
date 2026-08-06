@@ -2,13 +2,15 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from config.permissions import IsAdmin, IsResident
+
 from .models import EmergencyContact, Guardian
 from .serializers import EmergencyContactSerializer, GuardianSerializer
 
 
 class GuardianListCreateView(generics.ListCreateAPIView):
     serializer_class = GuardianSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsResident]
 
     def get_queryset(self):
         return Guardian.objects.filter(resident=self.request.user)
@@ -19,7 +21,7 @@ class GuardianListCreateView(generics.ListCreateAPIView):
 
 class GuardianDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = GuardianSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsResident]
     queryset = Guardian.objects.all()
 
     def get_queryset(self):
@@ -28,7 +30,7 @@ class GuardianDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 class EmergencyContactListCreateView(generics.ListCreateAPIView):
     serializer_class = EmergencyContactSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsResident]
 
     def get_queryset(self):
         return EmergencyContact.objects.filter(resident=self.request.user)
@@ -39,7 +41,7 @@ class EmergencyContactListCreateView(generics.ListCreateAPIView):
 
 class EmergencyContactDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = EmergencyContactSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsResident]
     queryset = EmergencyContact.objects.all()
 
     def get_queryset(self):
@@ -47,7 +49,7 @@ class EmergencyContactDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class VerifyContactView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsResident]
 
     def post(self, request, pk, *args, **kwargs):
         contact = EmergencyContact.objects.get(pk=pk, resident=request.user)
@@ -57,7 +59,7 @@ class VerifyContactView(APIView):
 
 
 class RejectContactView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsResident]
 
     def post(self, request, pk, *args, **kwargs):
         contact = EmergencyContact.objects.get(pk=pk, resident=request.user)

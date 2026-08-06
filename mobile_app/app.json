@@ -1,6 +1,13 @@
 {
-  "plugins": [
-    "expo-font",
-    "expo-router"
-  ]
+  "expo": {
+    "name": "CareConnect",
+    "slug": "careconnect",
+    "scheme": "careconnect",
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+  }
 }

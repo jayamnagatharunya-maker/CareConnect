@@ -2,6 +2,8 @@ from rest_framework import generics, permissions,status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from config.permissions import IsAdmin, IsResident
+
 from .models import Notification, NotificationTemplate
 from .serializers import NotificationSerializer, NotificationTemplateSerializer
 
@@ -48,10 +50,10 @@ class NotificationMarkReadView(APIView):
 class NotificationTemplateListView(generics.ListCreateAPIView):
     queryset = NotificationTemplate.objects.all()
     serializer_class = NotificationTemplateSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAdmin]
 
 
 class NotificationTemplateDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = NotificationTemplate.objects.all()
     serializer_class = NotificationTemplateSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAdmin]

@@ -5,6 +5,8 @@ const navItems = [
   { path: "/", label: "Dashboard", icon: "📊" },
   { path: "/sos-monitor", label: "SOS Monitor", icon: "🚨" },
   { path: "/societies", label: "Societies", icon: "🏘️" },
+  { path: "/blocks", label: "Blocks", icon: "🏢" },
+  { path: "/flats", label: "Flats", icon: "🏠" },
   { path: "/residents", label: "Residents", icon: "👥" },
   { path: "/emergency-contacts", label: "Emergency Contacts", icon: "🆘" },
   { path: "/notifications", label: "Notifications", icon: "🔔" },

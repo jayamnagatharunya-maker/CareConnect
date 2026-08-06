@@ -2,6 +2,8 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from config.permissions import IsAdmin, IsAdminOrReadOnly
+
 from .models import Society, Block, Flat
 from .serializers import BlockCreateSerializer, BlockSerializer, FlatCreateSerializer, FlatSerializer, SocietySerializer
 
@@ -9,7 +11,7 @@ from .serializers import BlockCreateSerializer, BlockSerializer, FlatCreateSeria
 class SocietyListCreateView(generics.ListCreateAPIView):
     queryset = Society.objects.all()
     serializer_class = SocietySerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
 
     def get_queryset(self):
         queryset = Society.objects.all()
@@ -25,12 +27,12 @@ class SocietyListCreateView(generics.ListCreateAPIView):
 class SocietyDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Society.objects.all()
     serializer_class = SocietySerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
 
 
 class BlockListCreateView(generics.ListCreateAPIView):
     queryset = Block.objects.all()
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
 
     def get_serializer_class(self):
         if self.request.method == "POST":
@@ -48,12 +50,12 @@ class BlockListCreateView(generics.ListCreateAPIView):
 class BlockDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Block.objects.all()
     serializer_class = BlockSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
 
 
 class FlatListCreateView(generics.ListCreateAPIView):
     queryset = Flat.objects.all()
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
 
     def get_serializer_class(self):
         if self.request.method == "POST":
@@ -74,4 +76,4 @@ class FlatListCreateView(generics.ListCreateAPIView):
 class FlatDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Flat.objects.all()
     serializer_class = FlatSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]

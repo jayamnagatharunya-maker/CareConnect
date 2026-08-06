@@ -8,16 +8,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-j0im%ur7f9sy*+jc3=w
 
 DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    "0.0.0.0",
-    "192.168.1.108",
-    "192.168.1.104",
-    "192.168.1.111",
-    "10.14.222.107",
-    "testserver",
-]
+ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -107,21 +98,36 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
-
 AUTH_USER_MODEL = 'users.User'
 
 CORS_ALLOWED_ORIGINS = [
+    # React Web
+    "http://localhost:8081",
+    "http://localhost:8082",
+    "http://localhost:8083",
+    "http://localhost:19006",
+
+    # Admin Portal
     "http://localhost:3000",
     "http://localhost:3001",
     "http://localhost:3002",
     "http://localhost:3003",
     "http://localhost:3004",
-    "http://localhost:8081",
-    "http://localhost:19006",
-    "http://192.168.1.109:3000",
-    "http://192.168.1.109:3001",
-    "http://192.168.1.109:8081",
+
+    # LAN
+    "http://192.168.1.105:8083",
+    "http://192.168.1.106:8081",
+    "http://192.168.1.106:8082",
 ]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:8082",
+    "http://localhost:8083",
+    "http://192.168.1.105:8082",
+    "http://192.168.1.105:8083",
+    "http://192.168.1.106:8082",
+]
+
 CORS_ALLOW_CREDENTIALS = True
 
 SWAGGER_SETTINGS = {
@@ -139,5 +145,20 @@ CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "Asia/Kolkata"
-CELERY_TASK_ALWAYS_EAGER = True
+CELERY_TASK_ALWAYS_EAGER = False
 CELERY_TASK_EAGER_PROPAGATES = True
+
+FIREBASE_SERVICE_ACCOUNT_PATH = os.getenv("FIREBASE_SERVICE_ACCOUNT_PATH", "")
+FIREBASE_SERVICE_ACCOUNT_JSON = os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON", "")
+
+TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "")
+TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "")
+TWILIO_FROM_NUMBER = os.getenv("TWILIO_FROM_NUMBER", "")
+
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
+EMAIL_HOST = os.getenv("EMAIL_HOST", "localhost")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "25"))
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "False").lower() == "true"
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "no-reply@careconnect.local")

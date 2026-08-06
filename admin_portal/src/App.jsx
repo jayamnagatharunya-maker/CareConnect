@@ -7,6 +7,8 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import SOSMonitor from "./pages/SOSMonitor";
 import Societies from "./pages/Societies";
+import Blocks from "./pages/Blocks";
+import Flats from "./pages/Flats";
 import Residents from "./pages/Residents";
 import EmergencyContacts from "./pages/EmergencyContacts";
 import Notifications from "./pages/Notifications";
@@ -34,6 +36,24 @@ export default function App() {
         element={
           <ProtectedRoute>
             <Societies />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/blocks"
+        element={
+          <ProtectedRoute>
+            <Blocks />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/flats"
+        element={
+          <ProtectedRoute>
+            <Flats />
           </ProtectedRoute>
         }
       />

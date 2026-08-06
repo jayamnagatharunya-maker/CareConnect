@@ -1,5 +1,15 @@
 import { useState, useEffect } from "react";
-import { View, Text, FlatList, Button, StyleSheet, ActivityIndicator, TouchableOpacity, RefreshControl } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  Button,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+  RefreshControl,
+  Alert,
+} from "react-native";
 import { notificationsApi } from "../../services/api";
 
 export default function NotificationsScreen() {

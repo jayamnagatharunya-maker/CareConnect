@@ -1,5 +1,11 @@
 from django.contrib import admin
-from .models import ResidentProfile, User
+from .models import DeviceToken, ResidentProfile, User
+
+
+@admin.register(DeviceToken)
+class DeviceTokenAdmin(admin.ModelAdmin):
+    list_display = ("user", "platform", "token", "created_at")
+    search_fields = ("user__email", "token", "platform")
 
 
 @admin.register(ResidentProfile)

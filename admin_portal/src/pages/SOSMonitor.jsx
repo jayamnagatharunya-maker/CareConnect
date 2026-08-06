@@ -8,6 +8,7 @@ export default function SOSMonitor() {
   const [selectedSOS, setSelectedSOS] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [detailLoading, setDetailLoading] = useState(false);
 
   useEffect(() => {
     fetchSOS();
@@ -23,19 +24,31 @@ export default function SOSMonitor() {
       setLoading(false);
     }
   };
-const updateStatus = async (id, newStatus) => {
-  try {
-    await sosApi.updateStatus(id, newStatus);
 
-// Wait until the new data is loaded
-await fetchSOS();
+  const fetchSOSDetail = async (id) => {
+    setDetailLoading(true);
+    try {
+      const res = await sosApi.detail(id);
+      setSelectedSOS(res.data);
+      setShowModal(true);
+    } catch (err) {
+      console.error("Failed to fetch SOS detail:", err);
+      alert("Unable to load SOS details.");
+    } finally {
+      setDetailLoading(false);
+    }
+  };
 
-setShowModal(false);
-  } catch (error) {
-    console.error(error);
-    alert("Failed to update SOS status.");
-  }
-};
+  const updateStatus = async (id, newStatus) => {
+    try {
+      await sosApi.updateStatus(id, newStatus);
+      await fetchSOS();
+      setShowModal(false);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to update SOS status.");
+    }
+  };
   const filteredSOS = useMemo(() => {
     return sosList.filter((item) => {
       const matchesSearch =

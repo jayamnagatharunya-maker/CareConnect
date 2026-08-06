@@ -2,12 +2,15 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
 export default function RootLayout() {
+  console.log("ROOT LAYOUT LOADED");
+
   return (
     <>
       <StatusBar style="auto" />
-      <Stack>
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(tabs)" />
       </Stack>
     </>
   );
