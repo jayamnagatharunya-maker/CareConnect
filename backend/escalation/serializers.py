@@ -14,3 +14,4 @@ class EscalationLogSerializer(serializers.ModelSerializer):
         model = EscalationLog
         fields = ("id", "sos", "from_role", "to_role", "reason", "triggered_at")
         read_only_fields = ("id", "triggered_at")
+        ref_name = "EscalationLogEscalation"

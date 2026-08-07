@@ -27,7 +27,19 @@ api.interceptors.response.use(
 );
 
 export const authApi = {
-  login: (data) => api.post("/auth/login/", data),
+  login: async (data) => {
+  try {
+    const res = await api.post("/auth/login/", data);
+    console.log("SUCCESS", res);
+    return res;
+  } catch (err) {
+    console.log("LOGIN ERROR");
+    console.log(err);
+    console.log(err.response);
+    console.log(err.response?.data);
+    throw err;
+  }
+},
   register: (data) => api.post("/auth/register/", data),
   refresh: () => api.post("/auth/token/refresh/", { refresh: localStorage.getItem("refresh_token") }),
   logout: () => api.post("/auth/logout/", { refresh: localStorage.getItem("refresh_token") }),
@@ -54,6 +66,12 @@ export const usersApi = {
   pendingResidents: () => api.get("/auth/residents/pending/"),
   approveResident: (id, action, reason) => api.post(`/auth/residents/${id}/approve/`, { action, reason }),
   residentDirectory: (params) => api.get("/auth/residents/directory/", { params }),
+  residentProfile: () => api.get("/auth/profile/resident/"),
+  updateResidentProfile: (id, data) => api.put(`/auth/profile/resident/`, data),
+  volunteerProfile: () => api.get("/auth/profile/volunteer/"),
+  updateVolunteerProfile: (data) => api.put(`/auth/profile/volunteer/`, data),
+  securityProfile: () => api.get("/auth/profile/security/"),
+  updateSecurityProfile: (data) => api.put(`/auth/profile/security/`, data),
 };
 
 export const emergencyApi = {
@@ -77,12 +95,15 @@ export const sosApi = {
   detail: (id) => api.get(`/sos/${id}/`),
   updateStatus: (id, status) =>
     api.post(`/sos/${id}/status/`, { status }),
+  guardianResponse: (id, response) =>
+    api.post(`/sos/${id}/guardian-response/`, { response }),
   create: (data) => api.post("/sos/", data),
   broadcast: (data) => api.post("/sos/broadcast/", data),
 };
 
 export const dashboardApi = {
   summary: () => api.get("/dashboard/summary/"),
+  notificationAnalytics: () => api.get("/notifications/analytics/"),
 };
 
 export const notificationsApi = {

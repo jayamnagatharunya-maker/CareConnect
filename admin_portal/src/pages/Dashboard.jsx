@@ -4,7 +4,27 @@ import { useAuth } from "../context/AuthContext";
 
 export default function Dashboard() {
   const { logout } = useAuth();
-  const [summary, setSummary] = useState(null);
+  const [summary, setSummary] = useState({
+  total_sos: 0,
+  active_sos: 0,
+  pending_sos: 0,
+  resolved_sos: 0,
+  resolved_today: 0,
+  pending_guardian: 0,
+  acknowledged_sos: 0,
+  cancelled_sos: 0,
+  escalated: 0,
+  volunteers_responding: 0,
+  average_response_time_minutes: null,
+  category_counts: [],
+  daily_counts: [],
+});
+  const [notificationAnalytics, setNotificationAnalytics] = useState({
+    sent: 0,
+    delivered: 0,
+    failed: 0,
+    delivery_rate: 0,
+  });
   const [latestSOS, setLatestSOS] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -18,8 +38,33 @@ export default function Dashboard() {
     }
 
     try {
-      const [res, sosRes] = await Promise.all([dashboardApi.summary(), sosApi.list()]);
-      setSummary(res.data);
+      const [res, sosRes, notifAnalytics] = await Promise.all([
+        dashboardApi.summary(),
+        sosApi.list(),
+        dashboardApi.notificationAnalytics(),
+      ]);
+      setSummary({
+  total_sos: 0,
+  active_sos: 0,
+  pending_sos: 0,
+  resolved_sos: 0,
+  resolved_today: 0,
+  pending_guardian: 0,
+  acknowledged_sos: 0,
+  cancelled_sos: 0,
+  escalated: 0,
+  volunteers_responding: 0,
+  average_response_time_minutes: null,
+  category_counts: [],
+  daily_counts: [],
+  ...res.data,
+});
+      setNotificationAnalytics(notifAnalytics.data || {
+        sent: 0,
+        delivered: 0,
+        failed: 0,
+        delivery_rate: 0,
+      });
       const latest = (sosRes.data || [])
         .slice()
         .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
@@ -49,7 +94,7 @@ export default function Dashboard() {
     ? [
         {
           label: "Active SOS",
-          value: summary.pending_sos + summary.acknowledged_sos,
+          value: summary.active_sos ?? 0,
           icon: "🆘",
           color: "bg-red-500",
         },
@@ -148,6 +193,27 @@ export default function Dashboard() {
           </div>
         ))}
       </div>
+
+      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="text-xl font-semibold text-slate-900 mb-4">Notification Analytics</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
+            <p className="text-sm font-medium text-slate-500">Sent</p>
+            <p className="mt-2 text-2xl font-semibold text-slate-900">{notificationAnalytics.sent}</p>
+          </div>
+          <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
+            <p className="text-sm font-medium text-slate-500">Delivered</p>
+            <p className="mt-2 text-2xl font-semibold text-slate-900">{notificationAnalytics.delivered}</p>
+          </div>
+          <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
+            <p className="text-sm font-medium text-slate-500">Failed</p>
+            <p className="mt-2 text-2xl font-semibold text-slate-900">{notificationAnalytics.failed}</p>
+          </div>
+        </div>
+        <div className="mt-4 flex items-center gap-4 text-sm text-slate-600">
+          <span>Delivery Rate: <strong>{notificationAnalytics.delivery_rate}%</strong></span>
+        </div>
+      </section>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -258,10 +324,10 @@ export default function Dashboard() {
             <div className="rounded-3xl bg-slate-50 p-4">
               <p className="text-sm text-slate-500">Average Response Time</p>
               <p className="mt-2 text-3xl font-semibold text-slate-900">
-                {summary?.average_response_time_minutes !== null
-                  ? `${summary.average_response_time_minutes.toFixed(1)} min`
-                  : "N/A"}
-              </p>
+  {summary?.average_response_time_minutes != null
+    ? `${Number(summary.average_response_time_minutes).toFixed(1)} min`
+    : "N/A"}
+</p>
             </div>
             <div className="rounded-3xl bg-slate-50 p-4">
               <p className="text-sm text-slate-500">Escalated Incidents</p>

@@ -213,11 +213,34 @@ const handleDelete = async (id) => {
                     <tbody>
                       {contacts.map((contact) => (
                         <tr key={contact.id} className="border-b border-slate-100 hover:bg-slate-50">
-                          <td className="py-3 px-4 text-sm text-slate-900 font-medium">{contact.name}</td>
-                          <td className="py-3 px-4 text-sm text-slate-600">{contact.phone_number}</td>
-                          <td className="py-3 px-4 text-sm text-slate-600">{contact.relation || "-"}</td>
-                          
-                        </tr>
+
+  <td className="py-3 px-4">{contact.name}</td>
+
+  <td className="py-3 px-4">{contact.phone_number}</td>
+
+  <td className="py-3 px-4">{contact.relation || "-"}</td>
+
+  <td className="py-3 px-4">
+    {contact.verification_status || "Pending"}
+  </td>
+
+  <td className="py-3 px-4">
+    <button
+      onClick={() => handleEdit(contact)}
+      className="bg-yellow-500 text-white px-3 py-1 rounded mr-2"
+    >
+      Edit
+    </button>
+
+    <button
+      onClick={() => handleDelete(contact.id)}
+      className="bg-red-500 text-white px-3 py-1 rounded"
+    >
+      Delete
+    </button>
+  </td>
+
+</tr>
                       ))}
                     </tbody>
                   </table>

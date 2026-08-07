@@ -10,12 +10,20 @@ class Notification(models.Model):
         ("in_app", "In-App"),
     )
 
+    STATUS_CHOICES = (
+        ("queued", "Queued"),
+        ("sent", "Sent"),
+        ("delivered", "Delivered"),
+        ("failed", "Failed"),
+    )
+
     recipient = models.ForeignKey(User, related_name="notifications", on_delete=models.CASCADE)
     channel = models.CharField(max_length=20, choices=CHANNEL_CHOICES)
     title = models.CharField(max_length=255)
     body = models.TextField()
     data = models.JSONField(default=dict, blank=True)
     is_read = models.BooleanField(default=False)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="queued")
     sent_at = models.DateTimeField(auto_now_add=True)
     read_at = models.DateTimeField(null=True, blank=True)
 

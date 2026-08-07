@@ -9,6 +9,7 @@ class EscalationLogSerializer(serializers.ModelSerializer):
         model = EscalationLog
         fields = ("id", "sos", "from_role", "to_role", "reason", "triggered_at", "triggered_by")
         read_only_fields = ("id", "triggered_at", "triggered_by")
+        ref_name = "EscalationLogSOS"
 
 
 class EmergencyCategorySerializer(serializers.ModelSerializer):

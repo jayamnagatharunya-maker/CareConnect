@@ -11,6 +11,8 @@ from .views import (
     ResidentApprovalListView,
     ResidentDirectoryView,
     ResidentProfileView,
+    SecurityProfileView,
+    VolunteerProfileView,
 )
 from .otp_views import SendOTPView, VerifyOTPView
 
@@ -22,6 +24,8 @@ urlpatterns = [
     path("me/", MeView.as_view(), name="me"),
     path("device-token/", DeviceTokenView.as_view(), name="device-token"),
     path("profile/resident/", ResidentProfileView.as_view(), name="resident-profile"),
+    path("profile/volunteer/", VolunteerProfileView.as_view(), name="volunteer-profile"),
+    path("profile/security/", SecurityProfileView.as_view(), name="security-profile"),
     path("residents/pending/", ResidentApprovalListView.as_view(), name="resident-pending"),
     path("residents/<int:pk>/approve/", ResidentApprovalActionView.as_view(), name="resident-approve"),
     path("residents/directory/", ResidentDirectoryView.as_view(), name="resident-directory"),

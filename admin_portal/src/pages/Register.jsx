@@ -11,6 +11,7 @@ export default function Register() {
     role: "resident",
     password: "",
     confirm_password: "",
+    flat: "",
   });
 
   const [message, setMessage] = useState("");
@@ -32,6 +33,11 @@ export default function Register() {
       return;
     }
 
+    if (formData.role === "resident" && !formData.flat) {
+      setMessage("❌ Flat number is required for residents");
+      return;
+    }
+
     const API_URL = "http://127.0.0.1:8000/api/auth/register/";
 
     console.log("Calling:", API_URL);
@@ -46,6 +52,7 @@ export default function Register() {
           email: formData.email,
           phone_number: formData.phone_number,
           role: formData.role,
+          flat: formData.role === "resident" ? Number(formData.flat) : null,
           password: formData.password,
           password2: formData.confirm_password,
         }),
@@ -56,13 +63,15 @@ export default function Register() {
       console.log("Response:", data);
 
       if (response.ok) {
-        setMessage("✅ Registration Successful!");
+        setMessage("✅ Registration Successful! Redirecting to login...");
 
         setTimeout(() => {
           navigate("/login");
         }, 1500);
       } else {
-        setMessage(JSON.stringify(data, null, 2));
+        const errorData = await response.json();
+        const errorMsg = errorData?.detail || errorData?.email?.[0] || errorData?.password?.[0] || "Registration failed. Please check your details.";
+        setMessage("❌ " + errorMsg);
       }
     } catch (error) {
       console.error(error);
@@ -102,6 +111,17 @@ export default function Register() {
             <option value="resident">Resident</option>
             <option value="admin">Admin</option>
           </select>
+
+          {formData.role === "resident" && (
+            <input
+              type="number"
+              name="flat"
+              placeholder="Flat Number"
+              value={formData.flat}
+              onChange={handleChange}
+              required
+            />
+          )}
 
           <input
             type="password"

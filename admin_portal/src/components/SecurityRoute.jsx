@@ -1,8 +1,8 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import Layout from "./Layout";
+import SecurityLayout from "./SecurityLayout";
 
-export const ProtectedRoute = ({ children, allowedRoles }) => {
+export const SecurityRoute = ({ children }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -17,9 +17,9 @@ export const ProtectedRoute = ({ children, allowedRoles }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
+  if (user.role !== "security") {
     return <Navigate to={user.role === "admin" ? "/" : "/resident"} replace />;
   }
 
-  return <Layout>{children}</Layout>;
+  return <SecurityLayout>{children}</SecurityLayout>;
 };

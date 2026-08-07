@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "../context/AuthContext";
 
@@ -10,14 +10,24 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      await login(email, password);
-      window.location.href = "/";
+      const user = await login(email, password);
+
+      if (user.role === "admin") {
+        navigate("/");
+      } else if (user.role === "resident") {
+        navigate("/resident");
+      } else if (user.role === "guardian") {
+        navigate("/guardian");
+      } else if (user.role === "volunteer") {
+        navigate("/volunteer");
+      }
     } catch {
       setError("Invalid email or password. Please try again.");
     } finally {

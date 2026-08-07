@@ -53,10 +53,11 @@ class NotificationService:
                 for idx, resp in enumerate(response.responses):
                     if not resp.success:
                         print(f"FCM delivery failed for token {tokens[idx]}: {resp.exception}")
-            return response.success_count > 0
+            status = "delivered" if response.success_count > 0 else "failed"
+            return status, response
         except Exception as exc:
             print("FCM Error:", exc)
-            return False
+            return "failed", None
 
     @staticmethod
     def _get_user_tokens(user):
@@ -70,17 +71,19 @@ class NotificationService:
     @staticmethod
     def send_push_notification(user, title, body, data=None):
         tokens = NotificationService._get_user_tokens(user)
-        sent = NotificationService._send_fcm_notification(tokens, title, body, data)
+        result = NotificationService._send_fcm_notification(tokens, title, body, data)
 
+        status = result[0] if isinstance(result, tuple) else result
         NotificationService._log_notification(
             "push",
             user,
             title,
             body,
             data,
+            status=status,
         )
 
-        return sent
+        return status == "delivered"
 
 
     @staticmethod
@@ -88,13 +91,13 @@ class NotificationService:
         account_sid = getattr(settings, "TWILIO_ACCOUNT_SID", "")
         auth_token = getattr(settings, "TWILIO_AUTH_TOKEN", "")
 
-        # If Twilio is not configured, only log notification
         if not account_sid or not auth_token:
             NotificationService._log_notification(
                 "sms",
                 user,
                 "",
                 body,
+                status="sent",
             )
             return True
 
@@ -125,12 +128,20 @@ class NotificationService:
                 user,
                 "",
                 body,
+                status="delivered",
             )
 
             return True
 
         except Exception as e:
             print("SMS Error:", e)
+            NotificationService._log_notification(
+                "sms",
+                user,
+                "",
+                body,
+                status="failed",
+            )
             return False
 
 
@@ -156,17 +167,25 @@ class NotificationService:
                 user,
                 subject,
                 body,
+                status="delivered",
             )
 
             return True
 
         except Exception as e:
             print("Email Error:", e)
+            NotificationService._log_notification(
+                "email",
+                user,
+                subject,
+                body,
+                status="failed",
+            )
             return False
 
 
     @staticmethod
-    def _log_notification(channel, user, title, body, data=None):
+    def _log_notification(channel, user, title, body, data=None, status="queued"):
         from notifications.models import Notification
 
         Notification.objects.create(
@@ -175,7 +194,20 @@ class NotificationService:
             title=title or "",
             body=body or "",
             data=data or {},
+            status=status,
         )
+
+    @staticmethod
+    def send_in_app_notification(user, title, body, data=None):
+        NotificationService._log_notification(
+            "in_app",
+            user,
+            title,
+            body,
+            data,
+            status="delivered",
+        )
+        return True
 
 
     @staticmethod

@@ -1,11 +1,56 @@
-from rest_framework import generics, permissions,status
+from datetime import timedelta
+
+from django.db.models import Avg, Count, DurationField, ExpressionWrapper, F
+from django.utils import timezone
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from config.permissions import IsAdmin, IsResident
+from config.permissions import IsAdmin
 
 from .models import Notification, NotificationTemplate
 from .serializers import NotificationSerializer, NotificationTemplateSerializer
+
+
+class NotificationAnalyticsView(APIView):
+    permission_classes = [permissions.IsAuthenticated, IsAdmin]
+
+    def get(self, request):
+        today = timezone.now().date()
+
+        sent = Notification.objects.count()
+        delivered = Notification.objects.filter(status="delivered").count()
+        failed = Notification.objects.filter(status="failed").count()
+
+        delivery_rate = (delivered / sent * 100) if sent > 0 else 0
+
+        avg_response_seconds = (
+            Notification.objects.filter(
+                channel__in=["push", "sms", "email"],
+                sent_at__isnull=False,
+            )
+            .exclude(sent_at=F("read_at"))
+            .aggregate(
+                avg_time=Avg(
+                    ExpressionWrapper(
+                        F("read_at") - F("sent_at"),
+                        output_field=DurationField(),
+                    )
+                )
+            )["avg_time"]
+        )
+
+        return Response(
+            {
+                "sent": sent,
+                "delivered": delivered,
+                "failed": failed,
+                "delivery_rate": round(delivery_rate, 2),
+                "average_response_time_seconds": (
+                    avg_response_seconds.total_seconds() if avg_response_seconds else None
+                ),
+            }
+        )
 
 
 class NotificationListView(generics.ListAPIView):

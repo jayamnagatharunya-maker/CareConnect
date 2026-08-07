@@ -2,7 +2,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from config.permissions import IsAdmin, IsResident, IsSecurity, IsVolunteer
+from config.permissions import IsAdmin, IsAdminOrResident, IsVolunteer
 
 from .utils import get_address
 from .models import EmergencyCategory, IncidentUpdate, SOS
@@ -23,7 +23,7 @@ class EmergencyCategoryListView(generics.ListAPIView):
 
 class SOSListCreateView(generics.ListCreateAPIView):
     serializer_class = SOSSerializer
-    permission_classes = [permissions.IsAuthenticated, IsResident]
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrResident]
 
     def get_queryset(self):
         user = self.request.user
@@ -31,7 +31,7 @@ class SOSListCreateView(generics.ListCreateAPIView):
 
         if user.role == "resident":
             queryset = SOS.objects.filter(resident=user)
-        elif user.role == "admin":
+        elif user.role in ("admin", "security"):
             queryset = SOS.objects.all()
         else:
             queryset = SOS.objects.filter(status="pending")
@@ -39,7 +39,7 @@ class SOSListCreateView(generics.ListCreateAPIView):
         if sos_status:
             queryset = queryset.filter(status=sos_status)
 
-        return queryset
+        return queryset.order_by("-created_at")
 
     def perform_create(self, serializer):
         latitude = serializer.validated_data.get("latitude")

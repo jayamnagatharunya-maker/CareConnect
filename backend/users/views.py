@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from config.permissions import IsAdmin, IsResident
+from config.permissions import IsAdmin, IsResident, IsAdminOrResident
 
 from .models import ResidentProfile, User
 from .serializers import (
@@ -96,7 +96,7 @@ class DeviceTokenView(APIView):
 
 class ResidentProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = ResidentProfileSerializer
-    permission_classes = [permissions.IsAuthenticated, IsResident]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
         print("USER:", self.request.user)
@@ -114,6 +114,28 @@ class ResidentProfileView(generics.RetrieveUpdateAPIView):
         print("====================================")
 
         return super().update(request, *args, **kwargs)
+
+
+class VolunteerProfileView(generics.RetrieveUpdateAPIView):
+    serializer_class = VolunteerProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        profile, created = VolunteerProfile.objects.get_or_create(
+            user=self.request.user
+        )
+        return profile
+
+
+class SecurityProfileView(generics.RetrieveUpdateAPIView):
+    serializer_class = SecurityProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        profile, created = SecurityProfile.objects.get_or_create(
+            user=self.request.user
+        )
+        return profile
 
 
 class ResidentApprovalListView(generics.ListAPIView):

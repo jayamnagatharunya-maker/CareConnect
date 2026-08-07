@@ -17,9 +17,10 @@ export default function SOSMonitor() {
   const fetchSOS = async () => {
     try {
       const res = await sosApi.list();
-      setSosList(res.data);
+      setSosList(res.data.results || res.data);
     } catch (err) {
       console.error("Failed to fetch SOS:", err);
+      alert("Unable to load SOS records. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -33,7 +34,7 @@ export default function SOSMonitor() {
       setShowModal(true);
     } catch (err) {
       console.error("Failed to fetch SOS detail:", err);
-      alert("Unable to load SOS details.");
+      alert("Unable to load SOS details. Please try again.");
     } finally {
       setDetailLoading(false);
     }
@@ -46,7 +47,7 @@ export default function SOSMonitor() {
       setShowModal(false);
     } catch (error) {
       console.error(error);
-      alert("Failed to update SOS status.");
+      alert("Failed to update SOS status. Please try again.");
     }
   };
   const filteredSOS = useMemo(() => {
@@ -66,9 +67,19 @@ export default function SOSMonitor() {
     });
   }, [sosList, search, status]);
 
-  const active = sosList.filter((x) => x.status === "acknowledged").length;
-  const pending = sosList.filter((x) => x.status === "pending").length;
-  const resolved = sosList.filter((x) => x.status === "resolved").length;
+  const active = sosList.filter(
+  (x) =>
+    x.status === "pending" ||
+    x.status === "acknowledged"
+).length;
+
+const pending = sosList.filter(
+  (x) => x.status === "pending"
+).length;
+
+const resolved = sosList.filter(
+  (x) => x.status === "resolved"
+).length;
 
   return (
     <div className="p-6">
@@ -137,7 +148,7 @@ export default function SOSMonitor() {
             {loading ? (
               <tr>
                 <td colSpan="7" className="text-center p-6">
-                  Loading...
+                  Loading SOS monitor...
                 </td>
               </tr>
             ) : filteredSOS.length === 0 ? (
@@ -183,10 +194,7 @@ export default function SOSMonitor() {
 
                   <td className="p-3">
                     <button
-  onClick={() => {
-    setSelectedSOS(item);
-    setShowModal(true);
-}}
+  onClick={() => fetchSOSDetail(item.id)}
   className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
 >
   View
